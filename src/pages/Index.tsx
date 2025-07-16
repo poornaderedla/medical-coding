@@ -23,8 +23,10 @@ import {
   BarChart3,
   Clipboard
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
   const steps = [
     { id: "introduction", title: "Introduction", icon: BookOpen },
     { id: "psychological", title: "Psychological Fit", icon: Brain },
@@ -94,7 +96,11 @@ const Index = () => {
                 </div>
               </div>
 
-              <Button size="lg" className="px-8">
+              <Button 
+                size="lg" 
+                className="px-8"
+                onClick={() => navigate("/psychological")}
+              >
                 Start Assessment
                 <TrendingUp className="ml-2 h-4 w-4" />
               </Button>
