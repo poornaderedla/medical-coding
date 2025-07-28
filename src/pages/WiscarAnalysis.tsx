@@ -20,6 +20,7 @@ import {
 const WiscarAnalysis = ({ onComplete }) => {
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const steps = [
     { id: "introduction", title: "Introduction", icon: BookOpen },
@@ -98,8 +99,28 @@ const WiscarAnalysis = ({ onComplete }) => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < allQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // Complete section
+      onComplete(answers);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
+
+  const currentQuestion = allQuestions[currentQuestionIndex];
+  const currentSection = wiscarSections.find(section => 
+    section.questions.some(q => q.id === currentQuestion?.id)
+  );
   const isComplete = allQuestions.every(q => answers[q.id]);
   const progress = (Object.keys(answers).length / allQuestions.length) * 100;
+  const hasAnsweredCurrent = answers[currentQuestion?.id];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -114,7 +135,7 @@ const WiscarAnalysis = ({ onComplete }) => {
               </CardTitle>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>Question {Object.keys(answers).length + 1} of {allQuestions.length}</span>
+                  <span>Question {currentQuestionIndex + 1} of {allQuestions.length}</span>
                   <span>{Math.round(progress)}% Complete</span>
                 </div>
                 <ProgressBar value={progress} className="h-2" />
@@ -123,21 +144,24 @@ const WiscarAnalysis = ({ onComplete }) => {
             <CardContent className="space-y-6">
               <div className="bg-orange-50 p-4 rounded-lg">
                 <div className="text-sm font-medium text-orange-700 mb-2">
-                  {wiscarSections.find(section => section.questions.some(q => q.id === allQuestions[Object.keys(answers).length]?.id))?.title}
+                  {currentSection?.title}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  {allQuestions[Object.keys(answers).length]?.question}
+                  {currentQuestion?.question}
                 </h3>
                 <RadioGroup
-                  value={answers[allQuestions[Object.keys(answers).length]?.id] || ''}
-                  onValueChange={(value) => handleAnswerChange(allQuestions[Object.keys(answers).length]?.id, value)}
+                  value={answers[currentQuestion?.id] || ''}
+                  onValueChange={(value) => handleAnswerChange(currentQuestion?.id, value)}
                   className="space-y-3"
                 >
                   {likertOptions.map((option, index) => (
                     <div key={index} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option.value} id={`option-${index}`} />
+                      <RadioGroupItem 
+                        value={option.value} 
+                        id={`${currentQuestion?.id}-option-${index}`} 
+                      />
                       <Label 
-                        htmlFor={`option-${index}`} 
+                        htmlFor={`${currentQuestion?.id}-option-${index}`} 
                         className="text-sm cursor-pointer flex-1 py-2 px-3 rounded hover:bg-white/50 transition-colors"
                       >
                         {option.label}
@@ -148,24 +172,28 @@ const WiscarAnalysis = ({ onComplete }) => {
               </div>
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-500">
-                  Evaluating: {wiscarSections.find(section => section.questions.some(q => q.id === allQuestions[Object.keys(answers).length]?.id))?.title}
+                  Evaluating: {currentSection?.title}
                 </div>
-                <Button 
-                  onClick={() => {
-                    if (Object.keys(answers).length < allQuestions.length - 1) {
-                      // Go to next question
-                      handleAnswerChange(allQuestions[Object.keys(answers).length + 1]?.id, '');
-                    } else {
-                      // Complete section
-                      onComplete(answers);
-                    }
-                  }}
-                  disabled={!answers[allQuestions[Object.keys(answers).length]?.id]}
-                  className="bg-orange-600 hover:bg-orange-700"
-                >
-                  {Object.keys(answers).length === allQuestions.length - 1 ? 'Complete Assessment' : 'Next Question'}
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
+                <div className="flex space-x-2">
+                  {/* {currentQuestionIndex > 0 && (
+                    <Button 
+                      onClick={handlePreviousQuestion}
+                      variant="outline"
+                      className="border-orange-200 text-orange-600 hover:bg-orange-50"
+                    >
+                      <ArrowLeft className="mr-2 w-4 h-4" />
+                      Previous
+                    </Button>
+                  )} */}
+                  <Button 
+                    onClick={handleNextQuestion}
+                    disabled={!hasAnsweredCurrent}
+                    className="bg-orange-600 hover:bg-orange-700"
+                  >
+                    {currentQuestionIndex === allQuestions.length - 1 ? 'Complete Assessment' : 'Next Question'}
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

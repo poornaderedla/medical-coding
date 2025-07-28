@@ -20,6 +20,7 @@ import {
 const PsychologicalFit = ({ onComplete }) => {
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const steps = [
     { id: "introduction", title: "Introduction", icon: BookOpen },
@@ -69,8 +70,25 @@ const PsychologicalFit = ({ onComplete }) => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // Complete section
+      onComplete(answers);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
+  };
+
+  const currentQuestion = questions[currentQuestionIndex];
   const isComplete = questions.every(q => answers[q.id]);
   const progress = (Object.keys(answers).length / questions.length) * 100;
+  const hasAnsweredCurrent = answers[currentQuestion.id];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -85,7 +103,7 @@ const PsychologicalFit = ({ onComplete }) => {
               </CardTitle>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>Question {Object.keys(answers).length + 1} of {questions.length}</span>
+                  <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
                   <span>{Math.round(progress)}% Complete</span>
                 </div>
                 <ProgressBar value={progress} className="h-2" />
@@ -97,18 +115,21 @@ const PsychologicalFit = ({ onComplete }) => {
                   Psychological Fit
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  {questions[Object.keys(answers).length]?.question}
+                  {currentQuestion.question}
                 </h3>
                 <RadioGroup
-                  value={answers[questions[Object.keys(answers).length]?.id] || ''}
-                  onValueChange={(value) => handleAnswerChange(questions[Object.keys(answers).length]?.id, value)}
+                  value={answers[currentQuestion.id] || ''}
+                  onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
                   className="space-y-3"
                 >
                   {likertOptions.map((option, index) => (
                     <div key={index} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option.value} id={`option-${index}`} />
+                      <RadioGroupItem 
+                        value={option.value} 
+                        id={`${currentQuestion.id}-option-${index}`} 
+                      />
                       <Label 
-                        htmlFor={`option-${index}`} 
+                        htmlFor={`${currentQuestion.id}-option-${index}`} 
                         className="text-sm cursor-pointer flex-1 py-2 px-3 rounded hover:bg-white/50 transition-colors"
                       >
                         {option.label}
@@ -121,22 +142,26 @@ const PsychologicalFit = ({ onComplete }) => {
                 <div className="text-sm text-gray-500">
                   Evaluating: Psychological Fit
                 </div>
-                <Button 
-                  onClick={() => {
-                    if (Object.keys(answers).length < questions.length - 1) {
-                      // Go to next question
-                      handleAnswerChange(questions[Object.keys(answers).length + 1]?.id, '');
-                    } else {
-                      // Complete section
-                      onComplete(answers);
-                    }
-                  }}
-                  disabled={!answers[questions[Object.keys(answers).length]?.id]}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  {Object.keys(answers).length === questions.length - 1 ? 'Complete Section' : 'Next Question'}
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
+                <div className="flex space-x-2">
+                  {/* {currentQuestionIndex > 0 && (
+                    <Button 
+                      onClick={handlePreviousQuestion}
+                      variant="outline"
+                      className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                    >
+                      <ArrowLeft className="mr-2 w-4 h-4" />
+                      Previous
+                    </Button>
+                  )} */}
+                  <Button 
+                    onClick={handleNextQuestion}
+                    disabled={!hasAnsweredCurrent}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {currentQuestionIndex === questions.length - 1 ? 'Complete Section' : 'Next Question'}
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
