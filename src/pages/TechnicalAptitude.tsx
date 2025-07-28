@@ -13,10 +13,11 @@ import {
   Target, 
   TrendingUp,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  CheckCircle
 } from "lucide-react";
 
-const TechnicalAptitude = () => {
+const TechnicalAptitude = ({ onComplete }) => {
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
@@ -99,112 +100,75 @@ const TechnicalAptitude = () => {
   const progress = (Object.keys(answers).length / questions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Should I Learn Medical Coding?</h1>
-              <p className="text-sm text-muted-foreground">Comprehensive Career Assessment & Guidance</p>
-            </div>
-            <div className="text-right">
-              <div className="text-sm font-medium text-foreground">60% Complete</div>
-              <ProgressBar value={60} className="w-32 mt-1" />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation Steps */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <StepIndicator 
-            steps={steps}
-            currentStep="technical"
-            completedSteps={["introduction", "psychological"]}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <Card className="border-2 border-green-200">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Code className="w-6 h-6 text-green-600" />
+                <span>Technical Aptitude Assessment</span>
+              </CardTitle>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Question {Object.keys(answers).length + 1} of {questions.length}</span>
+                  <span>{Math.round(progress)}% Complete</span>
+                </div>
+                <ProgressBar value={progress} className="h-2" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-green-50 p-4 rounded-lg">
+                <div className="text-sm font-medium text-green-700 mb-2">
+                  Technical Aptitude
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  {questions[Object.keys(answers).length]?.question}
+                </h3>
+                <RadioGroup
+                  value={answers[questions[Object.keys(answers).length]?.id] || ''}
+                  onValueChange={(value) => handleAnswerChange(questions[Object.keys(answers).length]?.id, value)}
+                  className="space-y-3"
+                >
+                  {questions[Object.keys(answers).length]?.options?.map((option, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+                      <Label 
+                        htmlFor={`option-${index}`} 
+                        className="text-sm cursor-pointer flex-1 py-2 px-3 rounded hover:bg-white/50 transition-colors"
+                      >
+                        {option}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-500">
+                  Evaluating: Technical Aptitude
+                </div>
+                <Button 
+                  onClick={() => {
+                    if (Object.keys(answers).length < questions.length - 1) {
+                      // Go to next question
+                      handleAnswerChange(questions[Object.keys(answers).length + 1]?.id, '');
+                    } else {
+                      // Complete section
+                      onComplete(answers);
+                    }
+                  }}
+                  disabled={!answers[questions[Object.keys(answers).length]?.id]}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {Object.keys(answers).length === questions.length - 1 ? 'Complete Section' : 'Next Question'}
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Technical Aptitude Assessment</h2>
-            <p className="text-lg text-muted-foreground">
-              This section tests your logical reasoning, numerical aptitude, attention to detail, 
-              and basic knowledge of medical coding concepts.
-            </p>
-          </div>
-
-          {/* Progress indicator */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Section Progress</span>
-              <span className="text-sm text-muted-foreground">{Math.round(progress)}% Complete</span>
-            </div>
-            <ProgressBar value={progress} />
-          </div>
-
-          {/* Questions */}
-          <div className="space-y-8">
-            {questions.map((question, index) => (
-              <Card key={question.id} className="border-2">
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    {index + 1}. {question.question}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <RadioGroup
-                    value={answers[question.id] || ""}
-                    onValueChange={(value) => handleAnswerChange(question.id, value)}
-                  >
-                    <div className="space-y-3">
-                      {question.options.map((option, optionIndex) => (
-                        <div key={optionIndex} className="flex items-center space-x-2">
-                          <RadioGroupItem 
-                            value={optionIndex.toString()} 
-                            id={`${question.id}-${optionIndex}`} 
-                          />
-                          <Label 
-                            htmlFor={`${question.id}-${optionIndex}`}
-                            className="cursor-pointer"
-                          >
-                            {option}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </RadioGroup>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex justify-between mt-12">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/psychological")}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Psychological Fit
-            </Button>
-            
-            <Button 
-              onClick={() => navigate("/wiscar")}
-              disabled={!isComplete}
-              className="flex items-center gap-2"
-            >
-              Continue to WISCAR Analysis
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </main>
     </div>
   );
 };

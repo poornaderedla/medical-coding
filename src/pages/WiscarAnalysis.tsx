@@ -13,10 +13,11 @@ import {
   Target, 
   TrendingUp,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  CheckCircle
 } from "lucide-react";
 
-const WiscarAnalysis = () => {
+const WiscarAnalysis = ({ onComplete }) => {
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
@@ -101,119 +102,75 @@ const WiscarAnalysis = () => {
   const progress = (Object.keys(answers).length / allQuestions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Should I Learn Medical Coding?</h1>
-              <p className="text-sm text-muted-foreground">Comprehensive Career Assessment & Guidance</p>
-            </div>
-            <div className="text-right">
-              <div className="text-sm font-medium text-foreground">80% Complete</div>
-              <ProgressBar value={80} className="w-32 mt-1" />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation Steps */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <StepIndicator 
-            steps={steps}
-            currentStep="wiscar"
-            completedSteps={["introduction", "psychological", "technical"]}
-          />
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-4">WISCAR Framework Analysis</h2>
-            <p className="text-lg text-muted-foreground">
-              WISCAR evaluates Will, Interest, Skill, Cognitive Readiness, Ability to Learn, 
-              and Real-World Alignment to provide a comprehensive career fit assessment.
-            </p>
-          </div>
-
-          {/* Progress indicator */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Section Progress</span>
-              <span className="text-sm text-muted-foreground">{Math.round(progress)}% Complete</span>
-            </div>
-            <ProgressBar value={progress} />
-          </div>
-
-          {/* WISCAR Sections */}
-          <div className="space-y-8">
-            {wiscarSections.map((section, sectionIndex) => (
-              <Card key={sectionIndex} className="border-2">
-                <CardHeader>
-                  <CardTitle className="text-xl text-medical-primary">
-                    {section.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {section.questions.map((question, questionIndex) => (
-                    <div key={question.id}>
-                      <h4 className="font-medium mb-3">
-                        {sectionIndex + 1}.{questionIndex + 1} {question.question}
-                      </h4>
-                      <RadioGroup
-                        value={answers[question.id] || ""}
-                        onValueChange={(value) => handleAnswerChange(question.id, value)}
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <Card className="border-2 border-orange-200">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Target className="w-6 h-6 text-orange-600" />
+                <span>WISCAR Framework Analysis</span>
+              </CardTitle>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Question {Object.keys(answers).length + 1} of {allQuestions.length}</span>
+                  <span>{Math.round(progress)}% Complete</span>
+                </div>
+                <ProgressBar value={progress} className="h-2" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-orange-50 p-4 rounded-lg">
+                <div className="text-sm font-medium text-orange-700 mb-2">
+                  {wiscarSections.find(section => section.questions.some(q => q.id === allQuestions[Object.keys(answers).length]?.id))?.title}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  {allQuestions[Object.keys(answers).length]?.question}
+                </h3>
+                <RadioGroup
+                  value={answers[allQuestions[Object.keys(answers).length]?.id] || ''}
+                  onValueChange={(value) => handleAnswerChange(allQuestions[Object.keys(answers).length]?.id, value)}
+                  className="space-y-3"
+                >
+                  {likertOptions.map((option, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <RadioGroupItem value={option.value} id={`option-${index}`} />
+                      <Label 
+                        htmlFor={`option-${index}`} 
+                        className="text-sm cursor-pointer flex-1 py-2 px-3 rounded hover:bg-white/50 transition-colors"
                       >
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                          {likertOptions.map((option) => (
-                            <div key={option.value} className="flex items-center space-x-2">
-                              <RadioGroupItem 
-                                value={option.value} 
-                                id={`${question.id}-${option.value}`} 
-                              />
-                              <Label 
-                                htmlFor={`${question.id}-${option.value}`}
-                                className="text-sm cursor-pointer"
-                              >
-                                {option.label}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      </RadioGroup>
+                        {option.label}
+                      </Label>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex justify-between mt-12">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/technical")}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Technical Aptitude
-            </Button>
-            
-            <Button 
-              onClick={() => navigate("/results")}
-              disabled={!isComplete}
-              className="flex items-center gap-2"
-            >
-              View My Results
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
+                </RadioGroup>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-500">
+                  Evaluating: {wiscarSections.find(section => section.questions.some(q => q.id === allQuestions[Object.keys(answers).length]?.id))?.title}
+                </div>
+                <Button 
+                  onClick={() => {
+                    if (Object.keys(answers).length < allQuestions.length - 1) {
+                      // Go to next question
+                      handleAnswerChange(allQuestions[Object.keys(answers).length + 1]?.id, '');
+                    } else {
+                      // Complete section
+                      onComplete(answers);
+                    }
+                  }}
+                  disabled={!answers[allQuestions[Object.keys(answers).length]?.id]}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  {Object.keys(answers).length === allQuestions.length - 1 ? 'Complete Assessment' : 'Next Question'}
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

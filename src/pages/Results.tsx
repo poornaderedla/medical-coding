@@ -42,36 +42,58 @@ const Results = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <header className="border-b bg-card">
+      <div className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Should I Learn Medical Coding?</h1>
-              <p className="text-sm text-muted-foreground">Comprehensive Career Assessment & Guidance</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Should I Learn Medical Coding?
+              </h1>
+              <p className="text-gray-600 text-sm">
+                Comprehensive Career Assessment & Guidance
+              </p>
             </div>
             <div className="text-right">
-              <div className="text-sm font-medium text-foreground">100% Complete</div>
-              <ProgressBar value={100} className="w-32 mt-1" />
+              <div className="text-sm font-medium text-gray-900">100% Complete</div>
             </div>
           </div>
-        </div>
-      </header>
-
-      {/* Navigation Steps */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <StepIndicator 
-            steps={steps}
-            currentStep="results"
-            completedSteps={["introduction", "psychological", "technical", "wiscar"]}
-          />
+          {/* Progress Bar */}
+          <div className="mt-4">
+            <ProgressBar value={100} className="h-2" />
+          </div>
+          {/* Section Navigation */}
+          <div className="flex mt-4 space-x-4 overflow-x-auto">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              const isActive = step.id === "results";
+              const isCompleted = ["introduction", "psychological", "technical", "wiscar"].includes(step.id);
+              return (
+                <div
+                  key={step.id}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg min-w-fit ${
+                    isActive && step.id === "results"
+                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
+                      : isCompleted
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <CheckCircle className="w-4 h-4" />
+                  ) : (
+                    <Icon className="w-4 h-4" />
+                  )}
+                  <span className="text-sm font-medium">{step.title}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
-
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Overall Result */}
           <Card className="border-2 border-medical-success bg-medical-success/5 mb-8">
@@ -239,7 +261,7 @@ const Results = () => {
             </Button>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
